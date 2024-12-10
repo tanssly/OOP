@@ -1,50 +1,48 @@
-﻿public abstract class GameAccount
+﻿namespace lab1
 {
-    public string UserName { get; private set; }
-    public int CurrentRating { get; protected set; }
-    public int GamesCount => GameHistory.Count;
-
-    private List<GameHistoryEntry> GameHistory = new List<GameHistoryEntry>();
-
-    public GameAccount(string userName)
+    public abstract class GameAccount(string userName, int id)
     {
-        UserName = userName ?? throw new ArgumentNullException(nameof(userName));
-        CurrentRating = 1000;  
-    }
+        private int _currentRating = 1;
+        public string UserName { get; set; } = userName;
+        public int Id { get; protected set; } = id;
+        private static int _globalId = 1;
 
-    // Abstract method for calculating points
-    public abstract void CalculatePoints(string result, int rating);
-
-    // Win game
-    public void WinGame(Game game, int rating)
-    {
-        CurrentRating += rating;
-        GameHistory.Add(new GameHistoryEntry(game.GameIndex, game.OpponentName, "Win", rating));
-    }
-
-    // Lose game
-    public void LoseGame(Game game, int rating)
-    {
-        CurrentRating -= rating;
-        if (CurrentRating < 1)
+        public static int GetNextId()
         {
-            CurrentRating = 1; // Minimum rating
+            return _globalId++;
         }
-        GameHistory.Add(new GameHistoryEntry(game.GameIndex, game.OpponentName, "Lose", rating));
-    }
 
-    // Show stats
-    public void ShowStats()
-    {
-        Console.WriteLine($"\nStats for {UserName}:");
-        Console.WriteLine("-------------------------------------------------");
-        Console.WriteLine("| Game Index | Opponent      | Result | Rating  |");
-        Console.WriteLine("-------------------------------------------------");
-        foreach (var entry in GameHistory)
+        public int CurrentRating
         {
-            Console.WriteLine($"| {entry.GameIndex,-11} | {entry.OpponentName,-12} | {entry.Result,-6} | {entry.Rating,-7} |");
+            get => _currentRating;
+            set => _currentRating = Math.Max(value, 1);
         }
-        Console.WriteLine("-------------------------------------------------");
-        Console.WriteLine($"Current Rating: {CurrentRating}, Total Games Played: {GamesCount}");
+
+        public abstract void WinGame(int rating);
+        public abstract void LoseGame(int rating);
+
+        public void GetStats(GameServices gameService)
+        {
+            Console.WriteLine($"\n=== Game History for {UserName} ===");
+            Console.WriteLine($"{"Index",-6} | {"Opponent",-12} | {"Result",-6} | {"Rating",-6} | ");
+            Console.WriteLine(new string('-', 55));
+
+            var gamesForUser = gameService.ReadAll()
+                .Where(game => game.AccountId == Id)
+                .ToList();
+
+            foreach (var game in gamesForUser)
+            {
+                string opponent = game.OpponentName;
+                string result = game.Result;
+
+                Console.WriteLine($"{game.GameIndex,-6} | {opponent,-12} | {result,-6} | {game.Rating,-6} | ");
+            }
+
+            Console.WriteLine("\nAccount type: " + (this is VictoryStreakAccount ? "VictoryStreak" : this is ReducedPenaltyAccount ? "Reduced Penalty" : "Standard"));
+            Console.WriteLine("Current Rating: " + CurrentRating);
+        }
+
+
     }
 }

@@ -1,23 +1,15 @@
-﻿public class ReducedPenaltyAccount : GameAccount
+﻿namespace lab1
 {
-    private const double penaltyReductionFactor = 0.5; // Зниження штрафу на 50%
-
-    public ReducedPenaltyAccount(string userName) : base(userName) { }
-
-    public override void CalculatePoints(string result, int rating)
+    public class ReducedPenaltyAccount(string userName, int id) : GameAccount(userName, id)
     {
-        if (result == "Win")
+        public override void WinGame(int rating)
         {
-            CurrentRating += rating; // Стандартне збільшення рейтингу для перемоги
-            Console.WriteLine($"Win: CurrentRating = {CurrentRating}");
-        }
-        else
-        {
-            int penalty = (int)(rating * penaltyReductionFactor); // Зменшений штраф
-            CurrentRating -= penalty; // Зменшений штраф за програш
-            Console.WriteLine($"Loss: Penalty = {penalty}, CurrentRating = {CurrentRating}");
+            CurrentRating += rating;
         }
 
-        CurrentRating = Math.Max(CurrentRating, 0); // Перевірка на негативний рейтинг
+        public override void LoseGame(int rating)
+        {
+            CurrentRating -= (rating / 2); // Половина штрафу за поразку
+        }
     }
 }

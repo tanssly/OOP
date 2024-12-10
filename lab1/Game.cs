@@ -1,33 +1,19 @@
-﻿public abstract class Game
+﻿using lab1;
+
+public abstract class Game
 {
-    public int GameIndex { get; private set; }
-    public string OpponentName { get; private set; }
-    public string Result { get; private set; }
-    public int Rating { get; private set; }
+    private static int _globalGameIndex;
 
-    public Game(int gameIndex, string opponentName, string result, int rating)
+    public static int GetNextGameIndex() => ++_globalGameIndex;
+
+    public string Player1Name { get; set; }
+    public string Player2Name { get; set; }
+
+    protected Game(string player1Name, string player2Name)
     {
-        GameIndex = gameIndex;
-        OpponentName = opponentName;
-        Result = result;
-        Rating = rating;
+        Player1Name = player1Name;
+        Player2Name = player2Name;
     }
 
-    // Абстрактний метод для розрахунку рейтингу
-    public abstract int CalculateRating(int rating);
-
-    // Метод для проведення гри
-    public virtual void Play(GameAccount player, GameAccount opponent, int result)
-    {
-        if (result == 1)
-        {
-            player.WinGame(this, CalculateRating(Rating));
-            opponent.LoseGame(this, CalculateRating(Rating));
-        }
-        else if (result == -1)
-        {
-            player.LoseGame(this, CalculateRating(Rating));
-            opponent.WinGame(this, CalculateRating(Rating));
-        }
-    }
+    protected internal abstract int ImitationGame(GameAccount player1, GameAccount player2);
 }

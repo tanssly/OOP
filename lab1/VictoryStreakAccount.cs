@@ -1,25 +1,16 @@
-﻿public class VictoryStreakAccount : GameAccount
+﻿namespace lab1
 {
-    private int winStreak = 3;
-
-    public VictoryStreakAccount(string userName) : base(userName) { }
-
-    
-    public override void CalculatePoints(string result, int rating)
+    public class VictoryStreakAccount(string userName, int id) : GameAccount(userName, id)
     {
-        if (result == "Win")
+        public override void WinGame(int rating)
         {
-            winStreak++; // Збільшуємо серію перемог
-            CurrentRating += rating + (winStreak * 10); // Додаємо бонус за серію перемог
-            Console.WriteLine($"Win streak: {winStreak}, Rating after win: {CurrentRating}");
-        }
-        else
-        {
-            winStreak = 0; 
-            CurrentRating -= rating; 
-            Console.WriteLine($"Win streak reset to 0, Rating after loss: {CurrentRating}");
+            CurrentRating += (rating * 2);
+
         }
 
-        CurrentRating = Math.Max(CurrentRating, 0); // Перевірка на негативний рейтинг
+        public override void LoseGame(int rating)
+        {
+
+        }
     }
 }

@@ -1,15 +1,22 @@
-﻿public class TrainingGame : Game
+﻿namespace lab1
 {
-    public TrainingGame(int gameIndex, string opponentName, string result)
-        : base(gameIndex, opponentName, result, 0) { }
-
-    public override int CalculateRating(int rating)
+    public class TrainingGame(string player1Name, string player2Name) : Game(player1Name, player2Name)
     {
-        return 0; 
-    }
+        protected internal override int ImitationGame(GameAccount player1, GameAccount player2)
+        {
+            int result = new Random().Next(0, 2);
+            if (result == 0)
+            {
+                player1.WinGame(0);
+                player2.LoseGame(0);
+            }
+            else
+            {
+                player2.WinGame(0);
+                player1.LoseGame(0);
+            }
 
-    public override void Play(GameAccount player, GameAccount opponent, int result)
-    {
-        base.Play(player, opponent, result);
+            return result;
+        }
     }
 }

@@ -1,18 +1,15 @@
-﻿public class StandardAccount : GameAccount
+﻿namespace lab1
 {
-    public StandardAccount(string userName) : base(userName) { }
-
-    
-    public override void CalculatePoints(string result, int rating)
+    public class StandardAccount(string userName, int id) : GameAccount(userName, id)
     {
-        if (result == "Win")
+        public override void WinGame(int rating)
         {
-            CurrentRating += rating; 
+            CurrentRating += rating;
         }
-        else if (result == "Lose")
+
+        public override void LoseGame(int rating)
         {
-            CurrentRating -= rating; 
+            CurrentRating -= rating;
         }
-        CurrentRating = Math.Max(CurrentRating, 0); 
     }
 }

@@ -1,15 +1,25 @@
-﻿public class StandardGame : Game
+﻿namespace lab1
 {
-    public StandardGame(int gameIndex, string opponentName, string result, int rating)
-        : base(gameIndex, opponentName, result, rating) { }
+    public class StandardGame(string player1Name, string player2Name) : Game(player1Name, player2Name)
 
-    public override int CalculateRating(int rating)
     {
-        return Rating; // У стандартній грі рейтинг не змінюється
-    }
+        protected internal override int ImitationGame(GameAccount player1, GameAccount player2)
+        {
+            int result = new Random().Next(0, 2);
 
-    public override void Play(GameAccount player, GameAccount opponent, int result)
-    {
-        base.Play(player, opponent, result);
+            if (result == 0)
+            {
+                player1.WinGame(5);
+                player2.LoseGame(5);
+
+            }
+            else
+            {
+                player2.WinGame(5);
+                player1.LoseGame(5);
+            }
+
+            return result;
+        }
     }
 }

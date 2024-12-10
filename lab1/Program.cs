@@ -1,17 +1,28 @@
-﻿public class Program
+﻿using lab1;
+
+class Program
 {
-    public static void Main()
+    static void Main(string[] args)
     {
-        List<GameAccount> players = new List<GameAccount>();
-        Random random = new Random();
+        DbContext db = new DbContext();
+
+        // Create repositories and services
+        GameRepository gameRepository = new GameRepository(db);
+        GameServices gameServices = new GameServices(gameRepository);
+        GameAccountRepository accountRepository = new GameAccountRepository(db);
+        GameAccountServices accountServices = new GameAccountServices(accountRepository);
+
+        bool continuePlaying = true;
 
         while (true)
         {
             Console.WriteLine("\nSelect an option:");
             Console.WriteLine("1. Add player");
             Console.WriteLine("2. Start a game");
-            Console.WriteLine("3. Show player stats");
-            Console.WriteLine("4. Exit");
+            Console.WriteLine("3. Show all players");
+            Console.WriteLine("4. Show games by player");
+            Console.WriteLine("5. Show all games");
+            Console.WriteLine("6. Exit");
             Console.Write("Enter your choice: ");
             string choice = Console.ReadLine();
 
@@ -20,131 +31,66 @@
                 case "1":
                     Console.Write("Enter player name: ");
                     string playerName = Console.ReadLine();
-                    Console.WriteLine("Choose account type: 1-Standard, 2-Victory Streak, 3-Reduced Penalty");
-                    int type = int.Parse(Console.ReadLine());
-
-                    GameAccount account = type switch
-                    {
-                        1 => new StandardAccount(playerName),
-                        2 => new VictoryStreakAccount(playerName),
-                        3 => new ReducedPenaltyAccount(playerName),
-                        _ => throw new ArgumentException("Invalid account type")
-                    };
-
-                    players.Add(account);
-                    Console.WriteLine($"Player '{playerName}' added.");
-                    break;
-
-                case "2": // Start a game
-                    if (players.Count < 2)
-                    {
-                        Console.WriteLine("At least two players are required to start a game.");
-                        break;
-                    }
-
-                    // Choose game type
-                    Console.WriteLine("Choose game type: 1-Standard, 2-Training, 3-Solo");
-                    int gameType = int.Parse(Console.ReadLine());
-
-                    // Create game based on selected type
-                    Game game = gameType switch
-                    {
-                        1 => GameFactory.CreateGame("Standard", players.Count + 1, "Opponent", "Pending", 50),
-                        2 => GameFactory.CreateGame("Training", players.Count + 1, "Opponent", "Pending", 0),
-                        3 => GameFactory.CreateGame("Solo", players.Count + 1, "None", "Pending", 25),
-                        _ => throw new ArgumentException("Invalid game type")
-                    };
-
-                    // Choose players for the game
-                    Console.WriteLine("Available players:");
-                    for (int i = 0; i < players.Count; i++)
-                    {
-                        Console.WriteLine($"{i + 1}. {players[i].UserName}");
-                    }
-
-                    int player1Index = -1;
-                    int player2Index = -1;
-
-                    while (player1Index < 0 || player1Index >= players.Count)
-                    {
-                        Console.WriteLine("Enter player number for Player 1: ");
-                        player1Index = int.Parse(Console.ReadLine()) - 1;
-                        if (player1Index < 0 || player1Index >= players.Count)
-                        {
-                            Console.WriteLine("Invalid player number. Try again.");
-                        }
-                    }
-
-                    while (player2Index < 0 || player2Index >= players.Count || player2Index == player1Index)
-                    {
-                        Console.WriteLine("Enter player number for Player 2: ");
-                        player2Index = int.Parse(Console.ReadLine()) - 1;
-                        if (player2Index < 0 || player2Index >= players.Count)
-                        {
-                            Console.WriteLine("Invalid player number. Try again.");
-                        }
-                        if (player2Index == player1Index)
-                        {
-                            Console.WriteLine("Player 2 cannot be the same as Player 1. Try again.");
-                        }
-                    }
-
-                    GameAccount player1 = players[player1Index];
-                    GameAccount player2 = players[player2Index];
-
-                    // Enter rating for the game
-                    Console.Write("Enter rating for the game: ");
+                    Console.Write("Enter player rating: ");
                     int rating = int.Parse(Console.ReadLine());
 
-                    // Simulate the game result
-                    game.Play(player1, player2, rating);
-
-                    // Update game history and ratings
-                    player1.WinGame(game, rating);  // Player 1 wins
-                    player2.LoseGame(game, rating); // Player 2 loses
-
-                    // Show game results
-                    Console.WriteLine("\nGame Results:");
-                    Console.WriteLine("-------------------------------------------------");
-                    Console.WriteLine("| Player       | Opponent      | Result | Rating  |");
-                    Console.WriteLine("-------------------------------------------------");
-
-                    // Results for Player 1
-                    Console.WriteLine($"| {player1.UserName,-12} | {player2.UserName,-12} | Win    | {rating,-8} |");
-
-                    // Results for Player 2
-                    Console.WriteLine($"| {player2.UserName,-12} | {player1.UserName,-12} | Lose   | {rating,-8} |");
-
-                    Console.WriteLine("-------------------------------------------------");
+                    // Create and add player
+                    GameAccount newPlayer = new StandardAccount(playerName, rating);
+                    accountServices.AddGameAccount(newPlayer);
+                    Console.WriteLine("Player added.");
                     break;
 
+                case "2":
+                    Console.Write("Enter player name: ");
+                    string p1 = Console.ReadLine();
+                    Console.Write("Enter opponent name: ");
+                    string p2 = Console.ReadLine();
+                    Console.Write("Enter number of games: ");
+                    int numberOfGames = int.Parse(Console.ReadLine());
+
+                    // Get players by name
+                    GameAccount player1 = accountServices.GetAccountByUserName(p1);
+                    GameAccount player2 = accountServices.GetAccountByUserName(p2);
+
+                    // Create game instance
+                    Game game = GameFactory.CreateGames(1, player1, player2);
+
+                    // Call PlayGame with correct parameters
+                    gameServices.PlayGame(gameServices, numberOfGames, game, player1, player2);
+                    Console.WriteLine("Game played and results saved.");
+                    break;
 
                 case "3":
-                    Console.WriteLine("Available players:");
-                    for (int i = 0; i < players.Count; i++)
+                    Console.WriteLine("All Players:");
+                    foreach (var player in accountServices.ReadAll())
                     {
-                        Console.WriteLine($"{i + 1}. {players[i].UserName}");
-                    }
-
-                    Console.Write("Enter player number: ");
-                    int statsIndex = int.Parse(Console.ReadLine()) - 1;
-
-                    if (statsIndex >= 0 && statsIndex < players.Count)
-                    {
-                        players[statsIndex].ShowStats();  // This will now call the ShowStats method correctly
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid player number.");
+                        Console.WriteLine($"{player.Id}: {player.UserName} - Rating: {player.CurrentRating}");
                     }
                     break;
 
                 case "4":
-                    Console.WriteLine("Exiting...");
+                    Console.Write("Enter player name: ");
+                    string searchName = Console.ReadLine();
+                    var games = gameServices.ReadAll().Where(g => g.OpponentName == searchName || g.OpponentName == searchName).ToList();
+                    foreach (var gameHistory in games)
+                    {
+                        Console.WriteLine($"Game {gameHistory.GameIndex}: {gameHistory.OpponentName} vs {gameHistory.OpponentName} - {gameHistory.Result} ({gameHistory.Rating} points)");
+                    }
+                    break;
+
+                case "5":
+                    Console.WriteLine("All Games:");
+                    foreach (var gameHistory in gameServices.ReadAll())
+                    {
+                        Console.WriteLine($"Game {gameHistory.GameIndex}: {gameHistory.OpponentName} vs {gameHistory.OpponentName} - {gameHistory.Result} ({gameHistory.Rating} points)");
+                    }
+                    break;
+
+                case "6":
                     return;
 
                 default:
-                    Console.WriteLine("Invalid choice. Try again.");
+                    Console.WriteLine("Invalid choice.");
                     break;
             }
         }

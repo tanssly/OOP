@@ -1,17 +1,25 @@
-﻿public class SoloGame : Game
+﻿namespace lab1
 {
-    public SoloGame(int gameIndex, string opponentName, string result, int rating)
-        : base(gameIndex, opponentName, result, rating) { }
+    public class SoloGame(string player1Name, string player2Name) : Game(player1Name, null)
 
-    
-    public override int CalculateRating(int rating)
     {
-        return Rating / 2; // Solo game дає половину рейтингу
-    }
+        protected internal override int ImitationGame(GameAccount player1, GameAccount _)
+        {
+            int result = new Random().Next(0, 2);
 
-    
-    public override void Play(GameAccount player, GameAccount opponent, int result)
-    {
-        base.Play(player, null, result); // Для solo гри передаємо null
+            if (result == 1)
+            {
+                player1.WinGame(10);
+                Console.WriteLine($"{player1.UserName} виграв гру!");
+
+            }
+            else
+            {
+                player1.LoseGame(5); // Програш знімає 5 балів
+                Console.WriteLine($"{player1.UserName} програв гру.");
+            }
+
+            return result;
+        }
     }
 }

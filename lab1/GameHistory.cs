@@ -1,15 +1,11 @@
-﻿public class GameHistoryEntry
+﻿namespace lab1
 {
-    public int GameIndex { get; private set; }
-    public string OpponentName { get; private set; }
-    public string Result { get; private set; }
-    public int Rating { get; private set; }
-
-    public GameHistoryEntry(int gameIndex, string opponentName, string result, int rating)
+    public class GameHistory(string opponentName, string result, int rating, int gameIndex, int accountId)
     {
-        GameIndex = gameIndex;
-        OpponentName = opponentName;
-        Result = result;
-        Rating = rating;
+        public string OpponentName { get; internal set; } = opponentName;
+        public string Result { get; internal set; } = result;
+        public int Rating { get; internal set; } = rating;
+        public int GameIndex { get; private set; } = gameIndex;
+        public int AccountId { get; private set; } = accountId;
     }
 }
